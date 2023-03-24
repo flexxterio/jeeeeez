@@ -1,0 +1,32 @@
+#include <stdio.h>
+#include <string.h>
+
+char	*ft_strcat(char *dest, char *src)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = 0;
+	while (dest[i] != '\0')
+	{	
+		i++;
+	}
+	while (src[j] != '\0')
+	{
+		dest[i + j] = src[j];
+		j++;
+	}
+	dest[i + j] = '\0';
+	return (dest);
+}
+/*int	main()
+{
+	char src[] = "Frunkl.";
+	char dest[] = "Frenk?";
+	char src1[] = "Frunkl.";
+	char dest1[] = "Frenk?";
+	printf("my %s",ft_strcat(dest, src));
+	printf("\nman %s",strcat(dest1, src1));
+	return (0);
+}*/	
