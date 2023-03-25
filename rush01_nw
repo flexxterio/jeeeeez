@@ -1,0 +1,145 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#define SIZE 4
+
+// Function prototypes
+int parse_input(int argc, char *argv[], int constraints[2 * SIZE][SIZE]);
+
+int solve(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col);
+int try_value(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col, int next_row, int next_col, int value);
+int is_valid(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col);
+int check_row(int board[SIZE][SIZE], int row, int col, int i);
+int check_col(int board[SIZE][SIZE], int row, int col, int i);
+int check_completed_row(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col, int i, int visible_left, int max_height);
+void print_board(int board[SIZE][SIZE], int row, int col);
+
+int main(int argc, char *argv[]) {
+    int constraints[2 * SIZE][SIZE];
+    if (parse_input(argc, argv, constraints) == 0) {
+        write(1, "Error\n", 6);
+        return 1;
+    }
+
+    int board[SIZE][SIZE] = {0};
+
+    if (solve(board, constraints, 0, 0)) {
+        print_board(board, 0, 0);
+    } else {
+        write(1, "Error\n", 6);
+    }
+
+    return 0;
+}
+
+int parse_input(int argc, char *argv[], int constraints[2 * SIZE][SIZE]) {
+    if (argc != 2) return 0;
+
+    int expected_values = 2 * SIZE * SIZE;
+    int parsed_values = 0;
+    char *input = argv[1];
+
+    for (int i = 0; i < 2 * SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            int value;
+            if (*input >= '1' && *input <= '4') {
+                value = *input - '0';
+                constraints[i][j] = value;
+                parsed_values++;
+            } else {
+                return 0;
+            }
+            input++;
+            if (*input == ' ') {
+                input++;
+            }
+        }
+    }
+
+    return parsed_values == expected_values;
+}
+
+int solve(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col) {
+    if (row == SIZE) {
+        return 1;
+    }
+
+    int next_row = (col == SIZE - 1) ? row + 1 : row;
+    int next_col = (col == SIZE - 1) ? 0 : col + 1;
+
+    return try_value(board, constraints, row, col, next_row, next_col, 1);
+}
+
+int try_value(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col, int next_row, int next_col, int value) {
+    if (value > SIZE) {
+        board[row][col] = 0;
+        return 0;
+    }
+
+    board[row][col] = value;
+
+    if (is_valid(board, constraints, row, col) && solve(board, constraints, next_row, next_col)) {
+        return 1;
+    }
+
+    return try_value(board, constraints, row, col, next_row, next_col, value + 1);
+}
+int is_valid(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col) {
+    return check_row(board, row, col, 0) && check_col(board, row, col, 0) && check_completed_row(board, constraints, row, col, 1, 1, board[row][0]);
+}
+
+int check_row(int board[SIZE][SIZE], int row, int col, int i) {
+    if (i == col) {
+        return 1;
+    }
+    if (board[row][col] == board[row][i]) {
+        return 0;
+    }
+    return check_row(board, row, col, i + 1);
+}
+
+int check_col(int board[SIZE][SIZE], int row, int col, int i) {
+    if (i == row) {
+        return 1;
+    }
+    if (board[row][col] == board[i][col]) {
+        return 0;
+    }
+    return check_col(board, row, col, i + 1);
+}
+
+int check_completed_row(int board[SIZE][SIZE], int constraints[2 * SIZE][SIZE], int row, int col, int i, int visible_left, int max_height) {
+    if (col < SIZE - 1) {
+        return 1;
+    }
+    if (i == SIZE) {
+        if (visible_left != constraints[0][row]) {
+            return 0;
+        }
+        return 1;
+    }
+    if (board[row][i] > max_height) {
+        max_height = board[row][i];
+        visible_left++;
+    }
+    return check_completed_row(board, constraints, row, col, i + 1, visible_left, max_height);
+}
+
+void print_board(int board[SIZE][SIZE], int row, int col) {
+    if (row == SIZE) {
+        write(1, "\n", 1);
+        return;
+    }
+
+    if (col == SIZE) {
+        write(1, "\n", 1);
+        print_board(board, row + 1, 0);
+        return;
+    }
+
+    char value = board[row][col] + '0';
+    write(1, &value, 1);
+    write(1, " ", 1);
+    print_board(board, row, col + 1);
+}
