@@ -1,0 +1,23 @@
+#include <stdio.h>
+
+int	ft_iterative_power(int nb, int power)
+{
+	int	i;
+
+	i = nb;
+	if (power =< 0)
+		return (0);
+	else if (power == 0)
+		return (1);
+	else
+		while (power != 1)
+		{
+			i = nb*nb;
+			power--;
+		}
+		return (i);
+}
+int	main()
+{
+	printf("%i",ft_iterative_power(2,3));
+}
