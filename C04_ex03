@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+int	process_sign(char **str)
+{
+	int	sign;
+	int	minus_count;
+
+	sign = 1;
+	minus_count = 0;
+	while ((*(*str) == '-') || (*(*str) == '+'))
+	{
+		if (*(*str) == '-')
+			minus_count++;
+		(*str)++;
+	}
+	if (minus_count % 2 == 0)
+		sign = 1;
+	else
+		sign = -1;
+	return (sign);
+}
+
+int	ft_atoi(char *str)
+{
+	int	sign;
+	int	num;
+
+	num = 0;
+	while ((*str == ' ') || (*str == '\t') || (*str == '\n')
+		|| (*str == '\v') || (*str == '\f') || (*str == '\r'))
+		str++;
+	sign = process_sign(&str);
+	while (*str >= '0' && *str <= '9')
+	{
+		num = (num * 10) + ((int)*str - '0');
+		str++;
+	}
+	return (num * sign);
+}
+/*int	main()
+{
+	printf("%i", ft_atoi("-+-234"));
+	return (0);
+}*/
