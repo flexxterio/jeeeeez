@@ -99,3 +99,35 @@ Entry *parse_dictionary(const char *filename, size_t *num_entries) {
         entries[i].written_form = malloc(idx - value_start + 1);  // Allocate memory for the written form string with size equal to the length of the string plus one byte for null terminator
         while (j < (idx - value_start)) {  // While not at the end of the written form string
             entries[i].written_form[j] = buffer[value_start + j];  // Copy the current character from the buffer to the written form string
+                    }
+        // Add a null terminator to the end of the written form buffer
+        entries[i].written_form[j] = '\0';
+        // Store the key (i.e., the number) in the entry struct
+        entries[i].number = key;
+
+        idx++;
+        i++;
+    }
+
+    // Sort the entries in the dictionary in descending order of their key values
+    i = 0;
+    while (i < lines - 1) {
+        int j = i + 1;
+        while (j < lines) {
+            if (entries[i].number < entries[j].number) {
+                Entry temp = entries[i];
+                entries[i] = entries[j];
+                entries[j] = temp;
+            }
+            j++;
+        }
+        i++;
+    }
+
+    // Store the number of entries in the dictionary
+    *num_entries = lines;
+    // Free the buffer used to store the contents of the dictionary file
+    free(buffer);
+    // Return the array of entries in the dictionary
+    return entries;
+}
