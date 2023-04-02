@@ -131,3 +131,129 @@ Entry *parse_dictionary(const char *filename, size_t *num_entries) {
     // Return the array of entries in the dictionary
     return entries;
 }
+
+
+
+void ft_putnbr(int n) {
+    char c;
+
+    if (n < 0) {
+        write(1, "-", 1);
+        n *= -1;
+    }
+
+    if (n >= 10) {
+        ft_putnbr(n / 10);
+    }
+
+    c = (n % 10) + '0';
+    write(1, &c, 1);
+}
+
+void ft_putstr(const char *str) {
+    int i = 0;
+    while (str[i]) {
+        write(1, &str[i], 1);
+        i++;
+    }
+}
+
+char *number_to_written_form(unsigned long number, Entry *dict, size_t dict_size) {
+    // Find the largest number in the dictionary that is less than or equal to the input number
+    int i = dict_size - 1;
+    while (i >= 0 && dict[i].number > number) {
+        i--;
+    }
+
+    // Allocate memory for the written form of the number
+    char *written_form = malloc(1024);
+    if (!written_form) {
+        return NULL;
+    }
+
+    // Write the written form of the number into the allocated buffer
+    written_form[0] = '\0';
+    while (number > 0 && i >= 0) {
+        if (dict[i].number <= number) {
+            strcat(written_form, dict[i].written_form);
+            number -= dict[i].number;
+        } else {
+            i--;
+        }
+    }
+
+    // If the input number was not fully converted to its written form, free memory and return NULL
+    if (number > 0) {
+        free(written_form);
+        return NULL;
+    }
+
+    return written_form;
+}
+
+
+
+void free_dictionary(Entry *dict, size_t dict_size) {
+	int i = 0;
+    while (i < (int)dict_size) {
+        free(dict[i].written_form);
+        i++;
+    }
+    free(dict);
+}
+
+int main(int argc, char *argv[]) {
+    const char *dictionary_filename = "Numbers.txt";
+    const char *number_str;
+    char *written_form;
+    unsigned long number;
+    Entry *dictionary;
+    size_t dict_size;
+
+    // Parse command line arguments
+    if (argc == 2) {
+        number_str = argv[1];
+    } else if (argc == 3) {
+        dictionary_filename = argv[1];
+        number_str = argv[2];
+    } else {
+        const char usage[] = "Usage: %s [dictionary_file] number\n";
+        write(2, usage, sizeof(usage) - 1);
+        return 1;
+    }
+
+    // Convert the number string to an unsigned long integer
+    char *endptr;
+    number = strtoul(number_str, &endptr, 10);
+    if (*endptr != '\0') {
+        const char error[] = "Error\n";
+        write(2, error, sizeof(error) - 1);
+        return 1;
+    }
+
+    // Parse the dictionary
+    dictionary = parse_dictionary(dictionary_filename, &dict_size);
+    if (!dictionary) {
+        const char error[] = "Dict Error\n";
+        write(2, error, sizeof(error) - 1);
+        return 1;
+    }
+
+    // Convert the number to its written form
+    written_form = number_to_written_form(number, dictionary, dict_size);
+    if (!written_form) {
+        const char error[] = "Dict Error\n";
+        write(2, error, sizeof(error) - 1);
+    } else {
+        write(1, written_form, strlen(written_form));
+        const char newline[] = "\n";
+        write(1, newline, sizeof(newline) - 1);
+        free(written_form);
+    }
+
+    // Free the memory used by the dictionary
+    free_dictionary(dictionary, dict_size);
+
+    return 0;
+}
+
